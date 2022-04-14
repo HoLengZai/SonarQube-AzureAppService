@@ -91,7 +91,8 @@ TrackTimedEvent -InstrumentationKey $ApplicationInsightsApiKey -EventName 'Downl
         }
     }
 
-    $fileName = "$fileNamePrefix-$Version.zip"
+    $base_fileName = "$fileNamePrefix-$Version"
+    $fileName = "$base_fileName.zip"
     $downloadUri = "https://binaries.sonarsource.com/$downloadFolder/$fileName"
 
     if (!$downloadUri -or !$fileName) {
@@ -110,8 +111,9 @@ TrackTimedEvent -InstrumentationKey $ApplicationInsightsApiKey -EventName 'Downl
         Write-Output 'Extraction complete'
     }
 
-    TrackTimedEvent -InstrumentationKey $ApplicationInsightsApiKey -EventName 'Download Additional SonarQube Plugins' -ScriptBlockArguments $outputFile -ScriptBlock {
-        param([string]$outputFile)
+    $sonarqube_outputPath = "..\wwwroot\$base_fileName"
+    TrackTimedEvent -InstrumentationKey $ApplicationInsightsApiKey -EventName 'Download Additional SonarQube Plugins' -ScriptBlockArguments $sonarqube_outputPath -ScriptBlock {
+        param([string]$sonarqube_outputPath)
         function Get-SonarQubeAdditionalFile {
             [CmdletBinding()]
             param (
@@ -139,13 +141,13 @@ TrackTimedEvent -InstrumentationKey $ApplicationInsightsApiKey -EventName 'Downl
             "https://github.com/mc1arke/sonarqube-community-branch-plugin/releases/download/1.10.0/sonarqube-community-branch-plugin-1.10.0.jar"
         )
 
-        $outputPath = "$outputFile\extensions\plugins\"
+        $outputPath = "$sonarqube_outputPath\extensions\plugins\"
         foreach ($plugin_url in $sonar_plugins_url) {
             Get-SonarQubeAdditionalFile -downloadUri $plugin_url -outputPath $outputPath
         }
 
         Write-Output 'Clean up original SonarQube JDBC mssql driver folder.'
-        $outputPath = "$outputFile\lib\jdbc\mssql\"
+        $outputPath = "$sonarqube_outputPath\lib\jdbc\mssql\"
         $jdbc_driver_files = Get-ChildItem "$outputPath*" -Filter '*.jar'
         Write-Output "Deleting SonarQube JDBC mssql driver folder: $jdbc_driver_files"
         $jdbc_driver_files | Remove-Item
