@@ -146,12 +146,18 @@ TrackTimedEvent -InstrumentationKey $ApplicationInsightsApiKey -EventName 'Downl
             Get-SonarQubeAdditionalFile -downloadUri $plugin_url -outputPath $outputPath
         }
 
+        Write-Output 'Delete sonar-scala-plugin-*.jar to avoid conflict with sonar-scala_2.13-8.9.0-assembly community version.'
+        $outputPath = "$sonarqube_outputPath\lib\extensions\"
+        $sonar_scala_files = Get-ChildItem "$outputPath*" -Filter 'sonar-scala-plugin-*.jar'
+        Write-Output "Deleting SonarQube sonar-scala-plugin-*.jar: $sonar_scala_files"
+        $sonar_scala_files | Remove-Item
+
         Write-Output 'Clean up original SonarQube JDBC mssql driver folder.'
         $outputPath = "$sonarqube_outputPath\lib\jdbc\mssql\"
         $jdbc_driver_files = Get-ChildItem "$outputPath*" -Filter '*.jar'
         Write-Output "Deleting SonarQube JDBC mssql driver folder: $jdbc_driver_files"
         $jdbc_driver_files | Remove-Item
-        
+
         Write-Output 'Download the new JDBC Driver 10.2.0.jre11'
         $jdbc_driver_url = "https://repo1.maven.org/maven2/com/microsoft/sqlserver/mssql-jdbc/10.2.0.jre11/mssql-jdbc-10.2.0.jre11.jar"
         Get-SonarQubeAdditionalFile -downloadUri $jdbc_driver_url -outputPath $outputPath
