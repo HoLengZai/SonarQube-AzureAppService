@@ -135,7 +135,9 @@ TrackTimedEvent -InstrumentationKey $ApplicationInsightsApiKey -EventName 'Downl
             "https://github.com/hkamel/sonar-auth-aad/releases/download/1.2.0/sonar-auth-aad-plugin-1.2.0.jar",
             "https://github.com/galexandre/sonar-cobertura/releases/download/2.0/sonar-cobertura-plugin-2.0.jar",
             "https://github.com/dependency-check/dependency-check-sonar-plugin/releases/download/3.0.1/sonar-dependency-check-plugin-3.0.1.jar",
+            "https://github.com/cnescatlab/sonar-hadolint-plugin/releases/download/1.1.0/sonar-hadolint-plugin-1.1.0.jar",
             "https://s01.oss.sonatype.org/content/repositories/releases/com/sonar-scala/sonar-scala_2.13/8.9.0/sonar-scala_2.13-8.9.0-assembly.jar",
+            "https://github.com/sbaudoin/sonar-shellcheck/releases/download/v2.5.0/sonar-shellcheck-plugin-2.5.0.jar",
             "https://github.com/kwoding/sonar-webdriver-plugin/releases/download/sonar-webdriver-plugin-1.0.10/sonar-webdriver-plugin-1.0.10.jar",
             "https://github.com/sbaudoin/sonar-yaml/releases/download/v1.7.0/sonar-yaml-plugin-1.7.0.jar",
             "https://github.com/mc1arke/sonarqube-community-branch-plugin/releases/download/1.10.0/sonarqube-community-branch-plugin-1.10.0.jar"
