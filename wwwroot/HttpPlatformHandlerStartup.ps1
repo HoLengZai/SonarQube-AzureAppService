@@ -14,37 +14,35 @@ function TrackEvent {
     )
 
     log($EventName)
-    if($InstrumentationKey)
-    {
+    if ($InstrumentationKey) {
         $uniqueId = ''
-        if($Env:WEBSITE_INSTANCE_ID)
-        {
-            $uniqueId = $Env:WEBSITE_INSTANCE_ID.substring(5,15)
+        if ($Env:WEBSITE_INSTANCE_ID) {
+            $uniqueId = $Env:WEBSITE_INSTANCE_ID.substring(5, 15)
         }
 
         $properties = @{
-            "Location" = $Env:REGION_NAME;
-            "SKU" = $Env:WEBSITE_SKU;
+            "Location"        = $Env:REGION_NAME;
+            "SKU"             = $Env:WEBSITE_SKU;
             "Processor Count" = $Env:NUMBER_OF_PROCESSORS;
-            "Always On" = $Env:WEBSITE_SCM_ALWAYS_ON_ENABLED;
-            "UID" = $uniqueId
+            "Always On"       = $Env:WEBSITE_SCM_ALWAYS_ON_ENABLED;
+            "UID"             = $uniqueId
         }
 
         $body = ConvertTo-Json -Depth 5 -InputObject @{
-			name = "Microsoft.ApplicationInsights.Dev.$InstrumentationKey.Event";
-			time = [Datetime]::UtcNow.ToString("yyyy-MM-dd HH:mm:ss");
-			iKey = $InstrumentationKey;
-			data = @{
-				baseType = "EventData";
-				baseData = @{
-					ver = 2;
-					name = $EventName;
-					properties = $properties;
-				}
-			};
+            name = "Microsoft.ApplicationInsights.Dev.$InstrumentationKey.Event";
+            time = [Datetime]::UtcNow.ToString("yyyy-MM-dd HH:mm:ss");
+            iKey = $InstrumentationKey;
+            data = @{
+                baseType = "EventData";
+                baseData = @{
+                    ver        = 2;
+                    name       = $EventName;
+                    properties = $properties;
+                }
+            };
         }
 
-        Invoke-RestMethod -Method POST -Uri "https://dc.services.visualstudio.com/v2/track" -ContentType "application/json" -Body $body | out-null
+        Invoke-RestMethod -Method POST -Uri "https://dc.services.visualstudio.com/v2/track" -ContentType "application/json" -Body $body | Out-Null
     }
 }
 
@@ -52,7 +50,7 @@ TrackEvent -InstrumentationKey $ApplicationInsightsApiKey -EventName 'Starting H
 
 log('Searching for sonar.properties file')
 $propFile = Get-ChildItem 'sonar.properties' -Recurse
-if(!$propFile) {
+if (!$propFile) {
     log('Could not find sonar.properties')
     exit
 }
@@ -63,7 +61,7 @@ log('Resetting properties.')
 $configContents = $configContents -ireplace '^#?sonar\.', '#sonar.'
 
 log('Updating sonar.properties based on environment/application settings.')
-Get-ChildItem Env: | Where-Object -Property Name -like -Value 'sonar.*' | ForEach-Object {
+Get-ChildItem Env: | Where-Object -Property Name -Like -Value 'sonar.*' | ForEach-Object {
     $propertyName = $_.Name
     $propertyValue = $_.Value
     log("Setting $propertyName to $propertyValue")
@@ -76,11 +74,11 @@ log("Updating sonar.web.port to $port")
 $configContents = $configContents -ireplace '^#?sonar\.web\.port=.*', "sonar.web.port=$port"
 
 log('Saving updated sonar.properties contents')
-$configContents | Out-String | Set-Content -Path $propFile.FullName -NoNewLine
+$configContents | Out-String | Set-Content -Path $propFile.FullName -NoNewline
 
 log('Searching for wrapper.conf file')
 $wrapperConfig = Get-ChildItem 'wrapper.conf' -Recurse
-if(!$wrapperConfig) {
+if (!$wrapperConfig) {
     log("Could not find wrapper.conf")
     exit
 }
@@ -88,17 +86,16 @@ if(!$wrapperConfig) {
 log("File found at: $($wrapperConfig.FullName)")
 log("Writing to wrapper.conf file")	log('Updating wrapper.conf based on environment/application settings.')
 $wrapperConfigContents = Get-Content -Path $wrapperConfig.FullName -Raw
-$wrapperConfigContents -ireplace 'wrapper\.java\.command=.*', 'wrapper.java.command=%JAVA_HOME%\bin\java' | Set-Content -Path $wrapperConfig.FullName -NoNewLine
+$wrapperConfigContents -ireplace 'wrapper\.java\.command=.*', 'wrapper.java.command=%JAVA_HOME%\bin\java' | Set-Content -Path $wrapperConfig.FullName -NoNewline
 
 log('Searching for duplicate plugins.')
 $plugins = Get-ChildItem '.\sonarqube-*\extensions\plugins\*' -Filter '*.jar'
 $pluginBaseName = $plugins | ForEach-Object { $_.Name.substring(0, $_.Name.LastIndexOf('-')) }
 $uniquePlugins = $pluginBaseName | Select-Object -Unique
 $duplicates = Compare-Object -ReferenceObject $uniquePlugins -DifferenceObject $pluginBaseName
-if($duplicates)
-{
-    log("Duplicates plugins found for: $($duplicates.InputObject)")a
-    foreach($duplicate in $duplicates) { 
+if ($duplicates) {
+    log("Duplicates plugins found for: $($duplicates.InputObject)")
+    foreach ($duplicate in $duplicates) { 
         $oldestFile = $plugins | Where-Object { $_.Name -imatch $duplicate.InputObject } | Sort-Object -Property 'LastWriteTime' | Select-Object -First 1
         log("Deleting $oldestFile")
         $oldestFile | Remove-Item
@@ -107,7 +104,7 @@ if($duplicates)
 
 log('Searching for StartSonar.bat')
 $startScript = Get-ChildItem 'StartSonar.bat' -Recurse
-if(!$startScript) {
+if (!$startScript) {
     log('Could not find StartSonar.bat')
     exit
 }
